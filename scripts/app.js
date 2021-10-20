@@ -60,6 +60,7 @@ function getRandomNum() {
 }
 
 function setBg(){
+    const img = new Image();
     let timeOfDay = getTimeOfDay()
     let bgNum = randomNum
 
@@ -69,7 +70,10 @@ function setBg(){
         bgNum = "0" + bgNum
     }
 
-    document.body.style.backgroundImage = `url('./assets/img/${timeOfDay}/${bgNum}.jpg')`
+    img.src = `./assets/img/${timeOfDay}/${bgNum}.jpg`
+    img.onload = () => {      
+      document.body.style.backgroundImage = `url('./assets/img/${timeOfDay}/${bgNum}.jpg')`
+    }
 }
 
 function getSlideNext() {
