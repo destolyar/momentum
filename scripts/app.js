@@ -1,3 +1,6 @@
+let randomNum
+
+
 function showTime() {
     const time = document.querySelector('.time')
 
@@ -50,7 +53,50 @@ function getLocalStorage() {
     }
 }
 
+function getRandomNum() {
+    let num = Math.floor(Math.random() * 20) + 1
+
+    randomNum = num
+}
+
+function setBg(){
+    let timeOfDay = getTimeOfDay()
+    let bgNum = randomNum
+
+    bgNum = bgNum.toString()
+
+    if(bgNum.length === 1) {
+        bgNum = "0" + bgNum
+    }
+
+    document.body.style.backgroundImage = `url('./assets/img/${timeOfDay}/${bgNum}.jpg')`
+}
+
+function getSlideNext() {
+    randomNum++
+    if(randomNum > 20) {
+        randomNum = 1
+    }
+    setBg()
+}
+
+function getSlidePrev() {
+    randomNum--
+    if(randomNum < 1) {
+        randomNum = 20
+    }
+    setBg()
+}
+
 window.addEventListener('beforeunload', setLocalStorage)
 window.addEventListener('load', getLocalStorage)
 
+let slideNext = document.querySelector(".slide-next")
+let slidePrev = document.querySelector(".slide-prev")
+
+slideNext.addEventListener("click", getSlideNext)
+slidePrev.addEventListener("click", getSlidePrev)
+
+getRandomNum()
+setBg()
 showTime()
