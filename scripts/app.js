@@ -2,6 +2,7 @@ let randomNum
 let isPlay = false
 let playNum = 0
 let currentPlayTime = 0
+let oldQuoteNum
 
 const trackList = {
     0: "River Flows In You.mp3",
@@ -71,8 +72,8 @@ function getLocalStorage() {
     } 
 }
 
-function getRandomNum() {
-    let num = Math.floor(Math.random() * 20) + 1
+function getRandomNum(value=20) {
+    let num = Math.floor(Math.random() * value) + 1
 
     randomNum = num
 }
@@ -163,6 +164,9 @@ let prevTrack = document.querySelector(".play-prev")
 nextTrack.addEventListener("click", playNextTrack)
 prevTrack.addEventListener("click", playPrevTreack)
 
+let quoteUpdateElement = document.querySelector(".change-quote")
+quoteUpdateElement.addEventListener("click", getQuotes)
+
 function playAudio() {
     if(!isPlay){
         play.classList.add('pause')
@@ -213,15 +217,36 @@ function createTrackList(){
         li.textContent = trackName
         audioListElement.append(li)
     }
-
-
 }
+
+function getNumForQuote(){
+    let num = Math.floor(Math.random() * 9)
+    return num
+}
+
+async function getQuotes() {  
+    const quotes = './assets/data.json';
+    const res = await fetch(quotes);
+    const data = await res.json(); 
+    
+    const quoteElement = document.querySelector(".quote")
+    const quoteAuthorElement = document.querySelector(".author")
+    let num = getNumForQuote()
+    if(num === oldQuoteNum) {
+        num = getNumForQuote()
+    }
+    quoteElement.textContent = data[num].text
+    quoteAuthorElement.textContent = data[num].author
+    oldQuoteNum = num
+}
+
 function secondFunctions() {
     getWeather()
     getRandomNum()
     setBg()
     showTime()
     createTrackList()
+    getQuotes();
 }
 secondFunctions()
 
