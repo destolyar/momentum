@@ -1,4 +1,14 @@
 let randomNum
+let isPlay = false
+let playNum = 0
+let currentPlayTime = 0
+
+const trackList = {
+    0: "River Flows In You.mp3",
+    1: "Ennio Morricone.mp3",
+    2: "Summer Wind.mp3",
+    3: "Aqua Caelestis.mp3"
+}
 
 
 function showTime() {
@@ -27,11 +37,11 @@ function getTimeOfDay() {
     
     if(hours >= 6 & hours < 12) {
         return "morning"
-    } else if(hours >= 12 & hours < 17) {
+    } else if(hours >= 12 & hours < 18) {
         return "afternoon"
-    } else if(hours >= 17 & hours < 20) {
+    } else if(hours >= 18 & hours < 24) {
         return "evening"
-    } else if(hours >= 20) {
+    } else if(hours >= 0 & hours < 6) {
         return "night"
     }
 }
@@ -44,6 +54,9 @@ function showGreeting() {
 function setLocalStorage() {
     const name = document.querySelector(".name")
     localStorage.setItem('name', name.value);
+
+    const city = document.querySelector(".city")
+    localStorage.setItem('city', city.value)
 }
 
 function getLocalStorage() {
@@ -51,6 +64,11 @@ function getLocalStorage() {
     if(localStorage.getItem('name')) {
         name.value = localStorage.getItem('name');
     }
+
+    let city = document.querySelector(".city")
+    if(localStorage.getItem('city')) {
+        city.value = localStorage.getItem('city');
+    } 
 }
 
 function getRandomNum() {
@@ -92,6 +110,40 @@ function getSlidePrev() {
     setBg()
 }
 
+async function getWeather(city="Minsk") {  
+    const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=0cec7ed5f7b4f43ef5cc88ebf3352e56`
+    const res = await fetch(url);
+    const data = await res.json();
+
+    const weatherIcon = document.querySelector('.weather-icon')
+    const temperature = document.querySelector('.temperature')
+    const weatherDescription = document.querySelector('.weather-description')
+    const wind = document.querySelector('.wind')
+    const humidity = document.querySelector('.humidity')
+
+    let description =  data.weather[0].description
+    description = description[0].toUpperCase() + description.slice(1);
+
+    let temperatureInfo = Number(data.main.temp)
+    temperatureInfo = Math.round(temperatureInfo)
+
+    let windSpeed = Number(data.wind.speed)
+    windSpeed = Math.round(windSpeed)
+
+    weatherIcon.classList.add(`owf-${data.weather[0].id}`);
+    temperature.textContent = `${temperatureInfo}°C`;
+    weatherDescription.textContent = description;
+    wind.textContent = `Wind speed: ${windSpeed} m/s`
+    humidity.textContent = `Humidity: ${data.main.humidity}%`
+}
+
+function search(ele) {
+    if(event.key === 'Enter') {
+        getWeather(ele.value)        
+    }
+}
+
+
 window.addEventListener('beforeunload', setLocalStorage)
 window.addEventListener('load', getLocalStorage)
 
@@ -101,6 +153,78 @@ let slidePrev = document.querySelector(".slide-prev")
 slideNext.addEventListener("click", getSlideNext)
 slidePrev.addEventListener("click", getSlidePrev)
 
-getRandomNum()
-setBg()
-showTime()
+const audio = new Audio();
+const play = document.querySelector(".play")
+play.addEventListener('click', playAudio)
+
+let nextTrack = document.querySelector(".play-next")
+let prevTrack = document.querySelector(".play-prev")
+
+nextTrack.addEventListener("click", playNextTrack)
+prevTrack.addEventListener("click", playPrevTreack)
+
+function playAudio() {
+    if(!isPlay){
+        play.classList.add('pause')
+        audio.src = `./assets/sounds/${trackList[playNum]}`
+        if(currentPlayTime !== 0) {
+            audio.currentTime = currentPlayTime
+        } else {
+        audio.currentTime = 0;
+        }
+        audio.play();
+        isPlay = true     
+    } else {
+        play.classList.remove('pause')
+        currentPlayTime = audio.currentTime
+        audio.pause()
+        isPlay = false
+    }
+}
+
+function playNextTrack() {
+    audio.pause()
+    playNum++
+    if(playNum > 3) playNum = 0
+    audio.src = `./assets/sounds/${trackList[playNum]}`
+    audio.play();
+    isPlay = true 
+}
+
+function playPrevTreack() {
+    audio.pause()
+    playNum--
+    if(playNum < 0) playNum = 3
+    audio.src = `./assets/sounds/${trackList[playNum]}`
+    audio.play()
+    isPlay = true
+}
+
+function createTrackList(){
+    let audioListElement = document.querySelector(".play-list")
+    
+    for(let i = 0; i < 4; i++) {
+        li = document.createElement('li')
+        li.classList.add("play-item")
+
+        let trackName = trackList[i]
+        trackName = trackName.substr(0, trackName.length - 4)
+
+        li.textContent = trackName
+        audioListElement.append(li)
+    }
+
+
+}
+function secondFunctions() {
+    getWeather()
+    getRandomNum()
+    setBg()
+    showTime()
+    createTrackList()
+}
+secondFunctions()
+
+if(audio.currentTime === audio.duration) {
+    playNextTrack()
+}
